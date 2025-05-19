@@ -1,1 +1,139 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ben Anderson</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: #4a5568;
+            font-weight: 300;
+        }
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 0rem;
+        }
+        .link-item {
+            padding: 1rem 1.5rem;
+            background-color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #2b6cb0;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .link-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #ebf4ff;
+        }
+        .profile {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chatbot-prompt {
+            display: flex;
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
+            border-radius: 24px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .chatbot-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+        }
+        .send-button {
+            background-color: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .send-button:hover {
+            background-color: #1a4b8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="prompt" class="chatbot-prompt">
+            <!--
+            <input type="text" placeholder="Ask me anything..." class="chatbot-input">
+        -->
+            <span style="margin: 4px; padding: 4px;">
+             create a simple, but stylish html page that is a landing page for my personal domain name (benanderson.us) with links to my CV, linkedin profile, github profile, rochester lay dominicans, and rocvirtus
+        </span>
+            <button class="send-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+        </div>
+        <div class="profile">
+            <!-- You can add your profile picture here -->
+            <!-- <img class="profile-img" src="images/profile.jpg" alt="Ben Anderson"> -->
+        </div>
+        <h1>BenAnderson.us</h1>
+        
+        <h2>Professional</h1>
+        <div class="links">
+            <a href="https://docs.google.com/document/d/1i9WbGUX1D3ijjfgha06LuPwRYiNBMMiL/edit?usp=sharing&ouid=107362056772292849926&rtpof=true&sd=true" class="link-item" target="_blank">CV</a>
+            <a href="https://www.linkedin.com/in/bennyanderson/" class="link-item" target="_blank">LinkedIn</a>
+            <a href="https://github.com/andersonbd1" class="link-item" target="_blank">GitHub</a>
+        </div>
+        <br />
+        <br />
+        <h2>Personal</h1>
+        <div class="links">
+            <a href="https://rochester.laydominicans.org/" class="link-item" target="_blank">Rochester Lay Dominicans</a>
+            <a href="https://docs.google.com/document/d/1L3LcPRFH0jMqGwgZWKZpB-bS9LcQeZVf340HromgBm4/edit?tab=t.0#heading=h.s1frl9ncq9dc" class="link-item" target="_blank">ROCVirtus</a>
+        </div>
+    </div>
+</body>
+</html>
