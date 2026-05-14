@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Indeed Verified — Prototype</title>
+<style>
+  :root {
+    --indeed-blue: #2557a7;
+    --indeed-blue-dark: #164081;
+    --indeed-blue-light: #e4ebf7;
+    --indeed-text: #2d2d2d;
+    --indeed-muted: #595959;
+    --indeed-border: #d4d2d0;
+    --indeed-bg: #faf9f8;
+    --verified-blue: #1976d2;
+    --verified-bg: #e8f1fb;
+    --success: #168146;
+    --warning: #b65500;
+    --yellow: #f5b700;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 10px rgba(0,0,0,.08);
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--indeed-text);
+    background: var(--indeed-bg);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  a { color: var(--indeed-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ============== Demo Controls ============== */
+  .demo-bar {
+    position: fixed; bottom: 16px; right: 16px; z-index: 9999;
+    background: #1c1c1c; color: #fff; padding: 10px 14px;
+    border-radius: 999px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.25);
+    font-size: 13px;
+  }
+  .demo-bar strong { font-weight: 600; }
+  .demo-bar button {
+    background: transparent; color: #fff; border: 1px solid #555;
+    padding: 4px 10px; border-radius: 999px; font-size: 12px;
+  }
+  .demo-bar button.active { background: var(--indeed-blue); border-color: var(--indeed-blue); }
+  .demo-bar button:hover { border-color: #fff; }
+
+  /* ============== Indeed Header ============== */
+  .topnav {
+    background: #fff;
+    border-bottom: 1px solid var(--indeed-border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center; gap: 24px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 28px; font-weight: 700; color: var(--indeed-blue);
+    letter-spacing: -0.5px;
+    cursor: pointer;
+  }
+  .logo .dot { color: var(--yellow); }
+  .topnav nav { display: flex; gap: 20px; }
+  .topnav nav a { color: var(--indeed-text); font-size: 14px; }
+  .topnav-spacer { flex: 1; }
+  .topnav-right { display: flex; align-items: center; gap: 16px; }
+  .topnav-right a { font-size: 14px; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #2557a7, #4a7fcf);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px;
+  }
+
+  /* ============== Search Bar ============== */
+  .search-strip {
+    background: #fff;
+    border-bottom: 1px solid var(--indeed-border);
+    padding: 18px 24px;
+  }
+  .search-row {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; gap: 0; align-items: stretch;
+    border: 2px solid var(--indeed-text);
+    border-radius: 4px;
+    background: #fff;
+    overflow: hidden;
+  }
+  .search-field { flex: 1; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .search-field + .search-field { border-left: 1px solid var(--indeed-border); }
+  .search-field svg { color: var(--indeed-muted); flex: none; }
+  .search-field label { font-size: 11px; color: var(--indeed-muted); display: block; }
+  .search-field input { border: 0; outline: 0; font-size: 15px; width: 100%; padding: 2px 0; }
+  .search-btn {
+    background: var(--indeed-blue); color: #fff; border: 0;
+    padding: 0 28px; font-size: 16px; font-weight: 600;
+  }
+  .search-btn:hover { background: var(--indeed-blue-dark); }
+
+  /* ============== Layout ============== */
+  .page { max-width: 1180px; margin: 0 auto; padding: 16px 24px 64px; }
+  .two-col { display: grid; grid-template-columns: 420px 1fr; gap: 16px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ============== Verified Promo Banner ============== */
+  .promo {
+    background: linear-gradient(135deg, #1f4f9e 0%, #2e72d1 100%);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-md);
+    position: relative; overflow: hidden;
+  }
+  .promo::before {
+    content: ""; position: absolute; right: -30px; top: -30px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(255,255,255,.16), transparent 70%);
+  }
+  .promo .badge-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+    flex: none;
+  }
+  .promo h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+  .promo p { margin: 0; font-size: 13px; opacity: .92; }
+  .promo .promo-cta {
+    background: #fff; color: var(--indeed-blue-dark); border: 0;
+    padding: 9px 16px; border-radius: 999px;
+    font-weight: 600; font-size: 13px; margin-left: auto;
+    flex: none;
+  }
+  .promo .promo-cta:hover { background: #f0f0f0; }
+
+  /* ============== Job Cards ============== */
+  .job-list { display: flex; flex-direction: column; gap: 10px; }
+  .job-card {
+    background: #fff; border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 14px 16px;
+    cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  }
+  .job-card:hover { border-color: var(--indeed-blue); }
+  .job-card.selected { border-color: var(--indeed-blue); border-width: 2px; padding: 13px 15px; }
+  .job-card .title { color: var(--indeed-blue); font-weight: 600; font-size: 16px; margin-bottom: 2px; }
+  .job-card .company { font-size: 13px; }
+  .job-card .meta { font-size: 13px; color: var(--indeed-muted); margin-top: 4px; }
+  .job-card .tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    background: #eef2f8; color: var(--indeed-blue-dark); font-weight: 500;
+  }
+  .tag.verified { background: var(--verified-bg); color: var(--verified-blue); display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ============== Job Detail Panel ============== */
+  .detail {
+    background: #fff; border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 24px; min-height: 480px;
+  }
+  .detail h1 { margin: 0 0 6px; font-size: 22px; }
+  .detail .sub { color: var(--indeed-muted); margin-bottom: 14px; }
+  .detail-actions { display: flex; gap: 10px; margin-bottom: 18px; }
+  .btn {
+    border: 0; padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary { background: var(--indeed-blue); color: #fff; }
+  .btn-primary:hover { background: var(--indeed-blue-dark); }
+  .btn-secondary { background: #fff; color: var(--indeed-blue); border: 1px solid var(--indeed-blue); }
+  .btn-secondary:hover { background: var(--indeed-blue-light); }
+  .btn-ghost { background: transparent; color: var(--indeed-blue); }
+  .detail h3 { font-size: 15px; margin: 16px 0 6px; }
+  .detail p, .detail li { font-size: 14px; color: #333; }
+  .detail ul { padding-left: 20px; }
+
+  /* ============== Verified Badge ============== */
+  .vbadge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--verified-bg); color: var(--verified-blue);
+    border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600;
+  }
+  .vbadge svg { width: 14px; height: 14px; }
+  .vbadge-lg {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #1976d2, #2557a7);
+    color: #fff;
+    padding: 8px 18px; border-radius: 999px;
+    font-weight: 600; font-size: 15px;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, .3);
+  }
+
+  /* ============== Verified Landing ============== */
+  .hero {
+    background: linear-gradient(135deg, #102a55 0%, #1f4f9e 60%, #2e72d1 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 48px 40px;
+    margin-bottom: 24px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -80px; bottom: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,.12), transparent 70%);
+  }
+  .hero .eyebrow { font-size: 13px; opacity: .9; text-transform: uppercase; letter-spacing: 1.2px; }
+  .hero h1 { margin: 8px 0 12px; font-size: 42px; line-height: 1.1; font-weight: 800; }
+  .hero p { font-size: 17px; max-width: 580px; opacity: .92; margin: 0 0 24px; }
+  .hero .btn-primary { background: #fff; color: var(--indeed-blue-dark); font-size: 15px; }
+  .hero .btn-primary:hover { background: #f0f0f0; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    background: #fff; border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 22px;
+  }
+  .step .num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--indeed-blue-light); color: var(--indeed-blue-dark);
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  .step h3 { margin: 0 0 6px; font-size: 16px; }
+  .step p { margin: 0; font-size: 14px; color: var(--indeed-muted); }
+
+  .section-title { font-size: 22px; font-weight: 700; margin: 24px 0 12px; }
+  .section-sub { color: var(--indeed-muted); margin-bottom: 20px; }
+
+  .track-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .track-grid { grid-template-columns: 1fr; } }
+  .track-card {
+    background: #fff; border: 2px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 20px;
+    cursor: pointer; transition: all .15s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .track-card:hover { border-color: var(--indeed-blue); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .track-card.selected { border-color: var(--indeed-blue); background: var(--indeed-blue-light); }
+  .track-card .icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: var(--indeed-blue-light); color: var(--indeed-blue-dark);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .track-card h4 { margin: 0; font-size: 16px; }
+  .track-card p { margin: 0; font-size: 13px; color: var(--indeed-muted); }
+
+  /* ============== Evaluation Screen ============== */
+  .eval-shell {
+    background: #fff; border: 1px solid var(--indeed-border); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .eval-head {
+    background: #1c1c1c; color: #fff;
+    padding: 14px 22px; display: flex; align-items: center; gap: 14px;
+  }
+  .eval-head .live {
+    background: #d33a3a; color: #fff;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .eval-head .ai-tag {
+    background: rgba(255,255,255,.12); color: #fff;
+    padding: 3px 10px; border-radius: 999px; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .eval-head .timer { margin-left: auto; font-family: "SF Mono", Menlo, monospace; font-size: 14px; }
+  .eval-body { display: grid; grid-template-columns: 1fr 1fr; min-height: 460px; }
+  @media (max-width: 900px) { .eval-body { grid-template-columns: 1fr; } }
+  .eval-pane { padding: 20px 22px; }
+  .eval-pane + .eval-pane { border-left: 1px solid var(--indeed-border); }
+  .eval-pane h4 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--indeed-muted); }
+  .task-card {
+    background: #faf9f8; border: 1px solid var(--indeed-border); border-radius: 6px;
+    padding: 16px; margin-bottom: 12px; font-size: 14px;
+  }
+  .task-card strong { color: var(--indeed-blue-dark); }
+  .code-block {
+    background: #1c1c1c; color: #e1e1e1; border-radius: 6px; padding: 14px;
+    font-family: "SF Mono", Menlo, monospace; font-size: 13px;
+    overflow-x: auto; white-space: pre;
+  }
+  .chat-thread { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px; }
+  .msg { padding: 10px 12px; border-radius: 8px; font-size: 14px; max-width: 90%; }
+  .msg.them { background: #f0f0f0; align-self: flex-start; }
+  .msg.you { background: var(--indeed-blue-light); align-self: flex-end; }
+  .msg .who { font-size: 11px; color: var(--indeed-muted); margin-bottom: 2px; font-weight: 600; }
+  .eval-footer {
+    border-top: 1px solid var(--indeed-border);
+    padding: 14px 22px; display: flex; justify-content: space-between; align-items: center;
+    background: #faf9f8;
+  }
+
+  /* ============== Verified Profile / Results ============== */
+  .result-hero {
+    background: linear-gradient(135deg, #003a8c 0%, #1976d2 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 36px 36px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .result-hero .check {
+    width: 76px; height: 76px; margin: 0 auto 12px;
+    background: rgba(255,255,255,.18); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .result-hero h1 { margin: 0 0 6px; font-size: 30px; }
+  .result-hero .level { font-size: 16px; opacity: .92; margin-bottom: 8px; }
+  .result-hero .percentile {
+    display: inline-block; background: rgba(255,255,255,.18);
+    padding: 5px 14px; border-radius: 999px;
+    font-size: 13px;
+  }
+  .card {
+    background: #fff; border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 22px; margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 18px; }
+  .skill-row { margin-bottom: 14px; }
+  .skill-row .lbl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .bar { height: 8px; background: #eef0f3; border-radius: 999px; overflow: hidden; }
+  .bar > div { height: 100%; background: linear-gradient(90deg, #1976d2, #2557a7); border-radius: 999px; transition: width .8s ease; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stat {
+    background: #faf9f8; border: 1px solid var(--indeed-border);
+    border-radius: 6px; padding: 14px; text-align: center;
+  }
+  .stat .v { font-size: 22px; font-weight: 700; color: var(--indeed-blue-dark); }
+  .stat .l { font-size: 12px; color: var(--indeed-muted); }
+
+  .share-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #faf9f8; border: 1px solid var(--indeed-border);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px;
+  }
+  .toggle .switch {
+    width: 32px; height: 18px; background: var(--success);
+    border-radius: 999px; position: relative;
+  }
+  .toggle .switch::after {
+    content: ""; position: absolute; top: 2px; right: 2px;
+    width: 14px; height: 14px; background: #fff; border-radius: 50%;
+  }
+
+  /* ============== Employer ============== */
+  .filter-panel {
+    background: #fff; border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 18px;
+  }
+  .filter-panel h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--indeed-muted); margin: 0 0 12px; }
+  .filter-group { margin-bottom: 18px; }
+  .filter-group label { display: block; font-size: 14px; padding: 5px 0; cursor: pointer; }
+  .filter-group label input { margin-right: 8px; }
+  .verified-toggle {
+    background: var(--verified-bg);
+    border: 2px solid var(--verified-blue);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 18px; cursor: pointer;
+  }
+  .verified-toggle .check {
+    width: 20px; height: 20px; border: 2px solid var(--verified-blue);
+    border-radius: 4px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+  }
+  .verified-toggle.active .check { background: var(--verified-blue); }
+  .verified-toggle.active .check svg { display: block; }
+  .verified-toggle .check svg { display: none; color: #fff; }
+  .verified-toggle .lbl { font-weight: 600; font-size: 14px; color: var(--verified-blue); }
+  .verified-toggle .sub { font-size: 12px; color: var(--indeed-muted); margin-top: 2px; font-weight: 400; }
+
+  .cand-list { display: flex; flex-direction: column; gap: 10px; }
+  .cand-card {
+    background: #fff; border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 16px;
+    display: flex; gap: 14px;
+    transition: border-color .15s;
+    cursor: pointer;
+  }
+  .cand-card:hover { border-color: var(--indeed-blue); }
+  .cand-card.verified { border-left: 4px solid var(--verified-blue); }
+  .cand-card.dim { opacity: .55; }
+  .cand-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    flex: none;
+    color: #fff; font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cand-body { flex: 1; }
+  .cand-body .name { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .cand-body .role { font-size: 13px; color: var(--indeed-muted); }
+  .cand-body .skills { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .cand-meta { text-align: right; font-size: 12px; color: var(--indeed-muted); }
+
+  .insight-strip {
+    background: #fffbea; border: 1px solid #f5d680;
+    border-radius: 8px; padding: 12px 16px; font-size: 13px;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .insight-strip strong { color: #6b4900; }
+
+  .price-card {
+    background: linear-gradient(135deg, #f7faff, #eef2fa);
+    border: 1px solid var(--indeed-border);
+    border-radius: var(--radius); padding: 20px;
+    margin-top: 14px;
+  }
+  .price-card .price { font-size: 26px; font-weight: 700; color: var(--indeed-blue-dark); }
+  .price-card .price small { font-size: 13px; color: var(--indeed-muted); font-weight: 400; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ============== TOP NAV ============== -->
+<header class="topnav">
+  <div class="logo" onclick="navHome()">indeed<span class="dot">·</span></div>
+  <nav id="nav-candidate">
+    <a href="#" onclick="go('cand-home');return false">Home</a>
+    <a href="#">Company reviews</a>
+    <a href="#">Find salaries</a>
+  </nav>
+  <nav id="nav-employer" class="hidden">
+    <a href="#" onclick="go('emp-search');return false">Find candidates</a>
+    <a href="#">Post a job</a>
+    <a href="#">Reports</a>
+  </nav>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-right">
+    <a href="#" id="topnav-aux"></a>
+    <a href="#">Messages</a>
+    <a href="#">My Jobs</a>
+    <div class="avatar" id="avatar">JM</div>
+  </div>
+</header>
+
+<!-- ============== SEARCH STRIP (candidate home only) ============== -->
+<div id="search-strip" class="search-strip">
+  <form class="search-row" onsubmit="event.preventDefault();go('cand-home');">
+    <div class="search-field">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <div>
+        <label>What</label>
+        <input value="Software Engineer" />
+      </div>
+    </div>
+    <div class="search-field">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s-7-7.58-7-12a7 7 0 1 1 14 0c0 4.42-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <div>
+        <label>Where</label>
+        <input value="Remote (US)" />
+      </div>
+    </div>
+    <button class="search-btn">Find jobs</button>
+  </form>
+</div>
+
+<!-- ============== PAGES ============== -->
+<main class="page">
+
+  <!-- ===== CANDIDATE: HOME / SEARCH RESULTS ===== -->
+  <section id="page-cand-home">
+    <div class="promo" onclick="go('cand-landing')">
+      <div class="badge-icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10z"/></svg>
+      </div>
+      <div style="flex:1">
+        <h3>Get Indeed Verified — interview once, reuse everywhere</h3>
+        <p>Skip phone screens. Show employers a third-party verified evaluation of your skills.</p>
+      </div>
+      <button class="promo-cta">Get Verified →</button>
+    </div>
+
+    <div class="two-col">
+      <div class="job-list">
+        <div class="job-card selected" onclick="selectJob(this)">
+          <div class="title">Senior Backend Engineer</div>
+          <div class="company">Stripe · San Francisco, CA (Remote)</div>
+          <div class="meta">$180,000 – $240,000 · Full-time</div>
+          <div class="tags">
+            <span class="tag">Remote</span>
+            <span class="tag">Go · Python</span>
+            <span class="tag verified">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3zm-1 14l-4-4 1.5-1.5L11 13l4.5-4.5L17 10l-6 6z"/></svg>
+              Accepts Verified
+            </span>
+          </div>
+        </div>
+        <div class="job-card" onclick="selectJob(this)">
+          <div class="title">Staff Software Engineer, Platform</div>
+          <div class="company">Datadog · New York, NY (Hybrid)</div>
+          <div class="meta">$220,000 – $290,000 · Full-time</div>
+          <div class="tags">
+            <span class="tag">Hybrid</span>
+            <span class="tag">Distributed Systems</span>
+            <span class="tag verified">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3zm-1 14l-4-4 1.5-1.5L11 13l4.5-4.5L17 10l-6 6z"/></svg>
+              Accepts Verified
+            </span>
+          </div>
+        </div>
+        <div class="job-card" onclick="selectJob(this)">
+          <div class="title">Full-Stack Engineer (L4–L5)</div>
+          <div class="company">Notion · Remote</div>
+          <div class="meta">$160,000 – $215,000 · Full-time</div>
+          <div class="tags">
+            <span class="tag">Remote</span>
+            <span class="tag">React · TypeScript</span>
+          </div>
+        </div>
+        <div class="job-card" onclick="selectJob(this)">
+          <div class="title">Backend Engineer, Search Infra</div>
+          <div class="company">Indeed · Austin, TX</div>
+          <div class="meta">$170,000 – $225,000 · Full-time</div>
+          <div class="tags">
+            <span class="tag">Hybrid</span>
+            <span class="tag">Java · Kafka</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail">
+        <h1>Senior Backend Engineer</h1>
+        <div class="sub">Stripe · San Francisco, CA (Remote) · $180k–$240k</div>
+        <div class="detail-actions">
+          <button class="btn btn-primary">Apply now</button>
+          <button class="btn btn-secondary" onclick="go('cand-landing')">⚡ Apply with Verified</button>
+          <button class="btn btn-ghost">Save</button>
+        </div>
+        <div style="background: var(--verified-bg); border: 1px solid #cfe2f6; padding: 12px 14px; border-radius: 6px; display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1976d2"><path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3zm-1 14l-4-4 1.5-1.5L11 13l4.5-4.5L17 10l-6 6z"/></svg>
+          <div style="font-size: 13px;"><strong>This employer skips phone screens for Verified candidates.</strong> <a href="#" onclick="go('cand-landing');return false">Get Verified →</a></div>
+        </div>
+        <h3>About the role</h3>
+        <p>Build and own backend systems that move billions of dollars annually. You'll partner with product and platform teams to ship payment infrastructure at scale.</p>
+        <h3>What we're looking for</h3>
+        <ul>
+          <li>5+ years building production backend systems</li>
+          <li>Strong fluency in Go or Python</li>
+          <li>Experience with distributed systems &amp; data consistency</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CANDIDATE: VERIFIED LANDING ===== -->
+  <section id="page-cand-landing" class="hidden">
+    <div class="hero">
+      <div class="eyebrow">✨ Indeed Verified</div>
+      <h1>Interview once.<br/>Skip the rest.</h1>
+      <p>One trusted, third-party evaluation that lets you skip early-round interviews at hundreds of employers — including Stripe, Datadog, and Indeed.</p>
+      <button class="btn btn-primary" onclick="go('cand-track')">Get Verified →</button>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Evaluate</h3>
+        <p>Take a 90-minute structured technical interview with a calibrated third-party expert. AI tools encouraged — we evaluate <em>how you work</em>, not memorization.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Get verified</h3>
+        <p>Receive your Verified profile with skill benchmarks, level (L3–L7), and detailed strengths. Valid for 12 months.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Skip ahead</h3>
+        <p>Apply with your Verified badge. Participating employers skip phone screens and move you straight to final rounds.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What gets evaluated</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+        <div>
+          <h3 style="margin-top:0">🤖 AI-era problem solving</h3>
+          <p style="font-size:14px;color:#444">How you scope ambiguous problems, use AI tools effectively, and validate output.</p>
+        </div>
+        <div>
+          <h3 style="margin-top:0">🧠 Engineering judgment</h3>
+          <p style="font-size:14px;color:#444">Trade-offs, design decisions, and how you reason about real-world constraints.</p>
+        </div>
+        <div>
+          <h3 style="margin-top:0">⚙️ Technical execution</h3>
+          <p style="font-size:14px;color:#444">Building, debugging, and shipping working code — not whiteboard puzzles.</p>
+        </div>
+        <div>
+          <h3 style="margin-top:0">💬 Communication</h3>
+          <p style="font-size:14px;color:#444">How you collaborate, ask questions, and explain your reasoning.</p>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top: 18px;">
+      <button class="btn btn-primary" onclick="go('cand-track')" style="font-size:16px;padding:12px 28px">Start your evaluation</button>
+      <div style="margin-top:8px;color:var(--indeed-muted);font-size:13px">Free for candidates · Employers pay per qualified match</div>
+    </div>
+  </section>
+
+  <!-- ===== CANDIDATE: TRACK SELECT ===== -->
+  <section id="page-cand-track" class="hidden">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--indeed-muted);font-size:13px;margin-bottom:10px">
+      <a href="#" onclick="go('cand-landing');return false">← Back</a> · Step 1 of 3
+    </div>
+    <div class="section-title">Pick your track</div>
+    <div class="section-sub">Choose the role you'd like to be evaluated for. You can add more tracks later.</div>
+
+    <div class="track-grid">
+      <div class="track-card" onclick="selectTrack(this,'Backend Engineer')">
+        <div class="icon">⚙️</div>
+        <h4>Backend Engineer</h4>
+        <p>Services, APIs, distributed systems, data</p>
+      </div>
+      <div class="track-card selected" onclick="selectTrack(this,'Backend Engineer')">
+        <div class="icon">🧱</div>
+        <h4>Full-Stack Engineer</h4>
+        <p>End-to-end product engineering across the stack</p>
+      </div>
+      <div class="track-card" onclick="selectTrack(this,'Frontend Engineer')">
+        <div class="icon">🎨</div>
+        <h4>Frontend Engineer</h4>
+        <p>React, performance, design systems, UX</p>
+      </div>
+      <div class="track-card" onclick="selectTrack(this,'Data Engineer')">
+        <div class="icon">📊</div>
+        <h4>Data Engineer</h4>
+        <p>Pipelines, warehouses, SQL, analytics infra</p>
+      </div>
+      <div class="track-card" onclick="selectTrack(this,'ML Engineer')">
+        <div class="icon">🤖</div>
+        <h4>ML Engineer</h4>
+        <p>Modeling, evaluation, applied ML systems</p>
+      </div>
+      <div class="track-card" onclick="selectTrack(this,'DevOps / SRE')">
+        <div class="icon">🛠️</div>
+        <h4>DevOps / SRE</h4>
+        <p>Reliability, infra-as-code, observability</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px">
+      <h2>Target level</h2>
+      <p style="color:var(--indeed-muted);margin-top:-8px">We'll calibrate the evaluation to your target level.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary">L3 – Mid</button>
+        <button class="btn btn-primary">L4 – Senior</button>
+        <button class="btn btn-secondary">L5 – Staff</button>
+        <button class="btn btn-secondary">L6 – Principal</button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top: 20px">
+      <button class="btn btn-ghost" onclick="go('cand-landing')">← Back</button>
+      <button class="btn btn-primary" onclick="go('cand-eval')">Continue to scheduling →</button>
+    </div>
+  </section>
+
+  <!-- ===== CANDIDATE: EVALUATION ===== -->
+  <section id="page-cand-eval" class="hidden">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--indeed-muted);font-size:13px;margin-bottom:10px">
+      Step 2 of 3 · Live evaluation
+    </div>
+    <div class="eval-shell">
+      <div class="eval-head">
+        <span class="live">● Live</span>
+        <span class="ai-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2 5.8 21.7l2.4-7.6L2 9.6h7.6z"/></svg>
+          AI tools allowed
+        </span>
+        <span style="font-size:13px">Evaluator: <strong>Priya R.</strong> · Calibrated · 1,200+ interviews</span>
+        <span class="timer">42:18</span>
+      </div>
+
+      <div class="eval-body">
+        <div class="eval-pane">
+          <h4>Task</h4>
+          <div class="task-card">
+            <strong>Real-world workflow:</strong> Our team owns the rate-limiter service. A downstream service is reporting <em>intermittent</em> 429s during off-peak hours. The repo is open in your editor. You have 30 minutes — walk us through how you investigate, what you ship, and how you'd validate.
+          </div>
+          <h4>Repo snippet</h4>
+<div class="code-block">// rate_limiter.go
+func (l *Limiter) Allow(key string) bool {
+    bucket := l.buckets[key]      // ← unbounded map
+    if bucket == nil {
+        bucket = newBucket(l.rate)
+        l.buckets[key] = bucket
+    }
+    return bucket.consume()
+}</div>
+          <div style="font-size: 13px; color: var(--indeed-muted); margin-top: 10px">
+            ✓ You may use any AI assistant · ✓ You may read source code · ✓ Talk us through your thinking
+          </div>
+        </div>
+
+        <div class="eval-pane">
+          <h4>Conversation</h4>
+          <div class="chat-thread">
+            <div class="msg them"><div class="who">Priya · Evaluator</div>Take a look at the repo. What's the first thing that catches your eye?</div>
+            <div class="msg you"><div class="who">You</div>The map is unbounded — and there's no lock. If two requests for a new key race, we'd lose one of the buckets. I'd verify with a quick test first.</div>
+            <div class="msg them"><div class="who">Priya · Evaluator</div>Good. How would you write that test? And — would you reach for an AI tool here?</div>
+            <div class="msg you"><div class="who">You</div>Yes, I'd ask Claude to draft a stress test that hits 1k keys concurrently. Then I'd <em>read</em> the test before running — easy to get a wrong assertion. Let me show you.</div>
+            <div class="msg them"><div class="who">Priya · Evaluator</div>Perfect — show me how you validate the AI's output.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="eval-footer">
+        <div style="font-size:13px;color:var(--indeed-muted)">Auto-saved · All work reviewed by 2 calibrators</div>
+        <button class="btn btn-primary" onclick="go('cand-result')">Submit for evaluation →</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top: 14px;font-size:13px;color:var(--indeed-muted)">
+      (Demo: click "Submit for evaluation" to see your Verified profile.)
+    </div>
+  </section>
+
+  <!-- ===== CANDIDATE: RESULTS / VERIFIED PROFILE ===== -->
+  <section id="page-cand-result" class="hidden">
+    <div class="result-hero">
+      <div class="check">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h1>You're Verified.</h1>
+      <div class="level">Verified Full-Stack Engineer · L4 (Senior)</div>
+      <div class="percentile">Top 12% of evaluated candidates</div>
+    </div>
+
+    <div class="card">
+      <h2>Skill benchmarks</h2>
+      <div class="skill-row">
+        <div class="lbl"><span>Problem solving with AI</span><span><strong>94</strong>/100</span></div>
+        <div class="bar"><div style="width:94%"></div></div>
+      </div>
+      <div class="skill-row">
+        <div class="lbl"><span>Engineering judgment</span><span><strong>88</strong>/100</span></div>
+        <div class="bar"><div style="width:88%"></div></div>
+      </div>
+      <div class="skill-row">
+        <div class="lbl"><span>Technical execution</span><span><strong>91</strong>/100</span></div>
+        <div class="bar"><div style="width:91%"></div></div>
+      </div>
+      <div class="skill-row">
+        <div class="lbl"><span>System design</span><span><strong>82</strong>/100</span></div>
+        <div class="bar"><div style="width:82%"></div></div>
+      </div>
+      <div class="skill-row">
+        <div class="lbl"><span>Communication</span><span><strong>90</strong>/100</span></div>
+        <div class="bar"><div style="width:90%"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Evaluator notes</h2>
+      <p style="font-size:14px"><strong>Strengths:</strong> Strong systems thinking. Validates AI output before trusting it. Comfortable with ambiguity and reasons clearly about trade-offs.</p>
+      <p style="font-size:14px"><strong>Areas to develop:</strong> System-design depth at the L5/Staff level — would benefit from more experience leading multi-team architectural decisions.</p>
+    </div>
+
+    <div class="card">
+      <h2>Your Verified status</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="v">12 mo</div><div class="l">Valid until May 2027</div></div>
+        <div class="stat"><div class="v">340+</div><div class="l">Employers accepting Verified</div></div>
+        <div class="stat"><div class="v">~3 wks</div><div class="l">Avg time-to-offer with Verified</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Share with employers</h2>
+      <div class="share-row">
+        <div class="toggle">
+          <div class="switch"></div>
+          <span>Visible to verified employers</span>
+        </div>
+        <div class="toggle">
+          <div class="switch"></div>
+          <span>Auto-apply with badge</span>
+        </div>
+      </div>
+      <div style="margin-top: 14px; display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="go('cand-home')">Find Verified-friendly jobs →</button>
+        <button class="btn btn-secondary">Copy public profile link</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EMPLOYER: CANDIDATE SEARCH ===== -->
+  <section id="page-emp-search" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div class="section-title" style="margin:0">Find candidates</div>
+        <div style="color:var(--indeed-muted);font-size:14px">Senior Backend Engineer · San Francisco / Remote</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--indeed-muted)">Active applicants</div>
+        <div style="font-size:22px;font-weight:700">1,284</div>
+      </div>
+    </div>
+
+    <div class="insight-strip">
+      💡 <div><strong>Tip:</strong> Filter for <span style="color:var(--verified-blue);font-weight:600">Indeed Verified</span> candidates to skip phone screens. Verified candidates are pre-evaluated by calibrated third-party experts.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
+      <aside class="filter-panel">
+        <div class="verified-toggle active" id="verified-filter" onclick="toggleVerified()">
+          <div class="check">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <div class="lbl">Indeed Verified only</div>
+            <div class="sub">Skip phone screens · pay per match</div>
+          </div>
+        </div>
+
+        <h3>Experience</h3>
+        <div class="filter-group">
+          <label><input type="checkbox" checked /> Senior (L4)</label>
+          <label><input type="checkbox" checked /> Staff (L5)</label>
+          <label><input type="checkbox" /> Principal (L6+)</label>
+        </div>
+
+        <h3>Skills</h3>
+        <div class="filter-group">
+          <label><input type="checkbox" checked /> Go</label>
+          <label><input type="checkbox" checked /> Distributed systems</label>
+          <label><input type="checkbox" /> Kafka</label>
+          <label><input type="checkbox" /> Postgres</label>
+        </div>
+
+        <h3>Location</h3>
+        <div class="filter-group">
+          <label><input type="checkbox" checked /> Remote (US)</label>
+          <label><input type="checkbox" /> San Francisco</label>
+          <label><input type="checkbox" /> New York</label>
+        </div>
+      </aside>
+
+      <div>
+        <div id="result-summary" style="font-size:13px;color:var(--indeed-muted);margin-bottom:10px">
+          Showing <strong id="result-count">42</strong> Verified candidates · ranked by match
+        </div>
+
+        <div class="cand-list" id="cand-list">
+          <!-- candidates injected by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EMPLOYER: CANDIDATE PROFILE ===== -->
+  <section id="page-emp-profile" class="hidden">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--indeed-muted);font-size:13px;margin-bottom:14px">
+      <a href="#" onclick="go('emp-search');return false">← Back to candidates</a>
+    </div>
+
+    <div class="card" style="display:flex;gap:20px;align-items:center;padding:24px">
+      <div class="cand-avatar" style="background:linear-gradient(135deg,#7b3fe4,#a96cff);width:72px;height:72px;font-size:24px">JM</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <h1 style="margin:0;font-size:24px">Jordan Miller</h1>
+          <span class="vbadge-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3zm-1 14l-4-4 1.5-1.5L11 13l4.5-4.5L17 10l-6 6z"/></svg>
+            Indeed Verified
+          </span>
+        </div>
+        <div style="color:var(--indeed-muted);font-size:14px;margin-top:4px">Verified Full-Stack Engineer · L4 (Senior) · Top 12%</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <span class="tag">Go</span>
+          <span class="tag">Python</span>
+          <span class="tag">Distributed systems</span>
+          <span class="tag">Postgres</span>
+          <span class="tag">7 yrs experience</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <button class="btn btn-primary" onclick="confirmInvite()">⚡ Skip to final round</button>
+        <div style="font-size:12px;color:var(--indeed-muted);margin-top:6px">Average response: 1.4 days</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
+      <div>
+        <div class="card">
+          <h2>Verified evaluation summary</h2>
+          <p style="font-size:14px;color:#444">Evaluated <strong>April 28, 2026</strong> by Priya R. (Indeed Verified calibrated panel · 1,200+ evaluations). Valid through May 2027.</p>
+
+          <div class="skill-row">
+            <div class="lbl"><span>Problem solving with AI</span><span><strong>94</strong>/100</span></div>
+            <div class="bar"><div style="width:94%"></div></div>
+          </div>
+          <div class="skill-row">
+            <div class="lbl"><span>Engineering judgment</span><span><strong>88</strong>/100</span></div>
+            <div class="bar"><div style="width:88%"></div></div>
+          </div>
+          <div class="skill-row">
+            <div class="lbl"><span>Technical execution</span><span><strong>91</strong>/100</span></div>
+            <div class="bar"><div style="width:91%"></div></div>
+          </div>
+          <div class="skill-row">
+            <div class="lbl"><span>System design</span><span><strong>82</strong>/100</span></div>
+            <div class="bar"><div style="width:82%"></div></div>
+          </div>
+          <div class="skill-row">
+            <div class="lbl"><span>Communication</span><span><strong>90</strong>/100</span></div>
+            <div class="bar"><div style="width:90%"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Evaluator notes</h2>
+          <p style="font-size:14px"><strong>Strengths:</strong> Strong systems thinking. Validates AI output before trusting it. Comfortable with ambiguity and reasons clearly about trade-offs.</p>
+          <p style="font-size:14px"><strong>Areas to develop:</strong> System-design depth at the L5/Staff level.</p>
+          <p style="font-size:14px;color:var(--indeed-muted)"><em>Evaluation reviewed by 2 calibrators · inter-rater agreement 0.91</em></p>
+        </div>
+
+        <div class="card">
+          <h2>Recent experience</h2>
+          <p style="font-size:14px"><strong>Senior Engineer</strong> · Lyft · 2022 – Present</p>
+          <p style="font-size:14px"><strong>Software Engineer</strong> · Shopify · 2019 – 2022</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="price-card">
+          <div style="font-size:13px;color:var(--indeed-muted);margin-bottom:4px">Pay-per-match</div>
+          <div class="price">$285 <small>per Verified intro</small></div>
+          <div style="font-size:13px;color:var(--indeed-muted);margin-top:8px">Only charged when the candidate accepts your invitation. No upfront cost, no per-applicant fees.</div>
+          <button class="btn btn-primary" style="margin-top:14px;width:100%" onclick="confirmInvite()">⚡ Skip to final round</button>
+          <button class="btn btn-secondary" style="margin-top:8px;width:100%">Message Jordan</button>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h2 style="font-size:15px">Why Verified works</h2>
+          <ul style="font-size:13px;padding-left:18px">
+            <li>3rd-party calibrated evaluation</li>
+            <li>Reviewed by 2 independent calibrators</li>
+            <li>Includes AI-era workflow tasks</li>
+            <li>Re-verified every 12 months</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============== DEMO BAR ============== -->
+<div class="demo-bar">
+  <strong>Demo:</strong>
+  <button id="demo-cand" class="active" onclick="setMode('candidate')">👤 Candidate</button>
+  <button id="demo-emp" onclick="setMode('employer')">🏢 Employer</button>
+  <button onclick="navHome()" title="Reset">↻</button>
+</div>
+
+<script>
+  // ============== State ==============
+  let mode = 'candidate';
+  let currentScreen = 'cand-home';
+  const screens = [
+    'cand-home','cand-landing','cand-track','cand-eval','cand-result',
+    'emp-search','emp-profile'
+  ];
+  const searchStripScreens = new Set(['cand-home']);
+
+  function go(id) {
+    currentScreen = id;
+    screens.forEach(s => {
+      const el = document.getElementById('page-' + s);
+      if (el) el.classList.toggle('hidden', s !== id);
+    });
+    document.getElementById('search-strip').classList.toggle('hidden', !searchStripScreens.has(id));
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.getElementById('demo-cand').classList.toggle('active', m === 'candidate');
+    document.getElementById('demo-emp').classList.toggle('active', m === 'employer');
+    document.getElementById('nav-candidate').classList.toggle('hidden', m !== 'candidate');
+    document.getElementById('nav-employer').classList.toggle('hidden', m !== 'employer');
+    const aux = document.getElementById('topnav-aux');
+    const avatar = document.getElementById('avatar');
+    if (m === 'candidate') {
+      aux.textContent = 'Employers / Post Job';
+      avatar.textContent = 'JM';
+      avatar.style.background = 'linear-gradient(135deg,#7b3fe4,#a96cff)';
+      go('cand-home');
+    } else {
+      aux.textContent = 'Switch to candidate';
+      avatar.textContent = 'AC';
+      avatar.style.background = 'linear-gradient(135deg,#168146,#39a96d)';
+      go('emp-search');
+    }
+  }
+
+  function navHome() {
+    if (mode === 'candidate') go('cand-home'); else go('emp-search');
+  }
+
+  function selectJob(el) {
+    document.querySelectorAll('#page-cand-home .job-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectTrack(el, name) {
+    document.querySelectorAll('#page-cand-track .track-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ============== Employer candidate list ==============
+  const candidates = [
+    {name:'Jordan Miller', initials:'JM', role:'Full-Stack Engineer · L4 (Senior)', skills:['Go','Postgres','React'], pct:'Top 12%', loc:'Remote · 7 yrs', verified:true, color:'#7b3fe4', clickable:true},
+    {name:'Sara Khan', initials:'SK', role:'Backend Engineer · L5 (Staff)', skills:['Go','Kafka','Distributed systems'], pct:'Top 8%', loc:'SF Bay · 9 yrs', verified:true, color:'#1976d2'},
+    {name:'Diego Alvarez', initials:'DA', role:'Backend Engineer · L4 (Senior)', skills:['Python','Postgres','Distributed systems'], pct:'Top 18%', loc:'Remote · 6 yrs', verified:true, color:'#d97706'},
+    {name:'Mei Tanaka', initials:'MT', role:'Full-Stack Engineer · L4 (Senior)', skills:['TypeScript','Go','GraphQL'], pct:'Top 22%', loc:'NY · 7 yrs', verified:true, color:'#168146'},
+    {name:'Avery Patel', initials:'AP', role:'Backend Engineer · L5 (Staff)', skills:['Go','Kafka','Postgres'], pct:'Top 15%', loc:'Remote · 8 yrs', verified:true, color:'#b91c1c'},
+  ];
+  const nonVerified = [
+    {name:'(Verified filter on — 1,242 unverified candidates hidden)', skills:[], verified:false, hidden:true},
+  ];
+
+  function renderCandidates(showAll) {
+    const list = document.getElementById('cand-list');
+    list.innerHTML = '';
+    candidates.forEach(c => list.appendChild(makeCard(c)));
+    if (showAll) {
+      const stubs = [
+        {name:'Riley Cooper', initials:'RC', role:'Backend Engineer', skills:['Go','Postgres'], loc:'Remote · 4 yrs', verified:false, color:'#475569'},
+        {name:'Casey Nguyen', initials:'CN', role:'Software Engineer', skills:['Python','AWS'], loc:'Remote · 5 yrs', verified:false, color:'#475569'},
+        {name:'Taylor Brooks', initials:'TB', role:'Full-Stack Engineer', skills:['React','Node'], loc:'NY · 3 yrs', verified:false, color:'#475569'},
+      ];
+      stubs.forEach(c => list.appendChild(makeCard(c)));
+    }
+    document.getElementById('result-count').textContent = showAll ? '1,284' : '42';
+    document.getElementById('result-summary').innerHTML = showAll
+      ? `Showing <strong id="result-count">${showAll ? '1,284' : '42'}</strong> candidates`
+      : `Showing <strong id="result-count">42</strong> Verified candidates · ranked by match`;
+  }
+
+  function makeCard(c) {
+    const div = document.createElement('div');
+    div.className = 'cand-card' + (c.verified ? ' verified' : ' dim');
+    if (c.clickable) div.onclick = () => go('emp-profile');
+    div.innerHTML = `
+      <div class="cand-avatar" style="background:linear-gradient(135deg,${c.color},${c.color}cc)">${c.initials}</div>
+      <div class="cand-body">
+        <div class="name">
+          ${c.name}
+          ${c.verified ? `<span class="vbadge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3zm-1 14l-4-4 1.5-1.5L11 13l4.5-4.5L17 10l-6 6z"/></svg>Verified</span>` : ''}
+        </div>
+        <div class="role">${c.role}</div>
+        <div class="skills">${c.skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>
+      </div>
+      <div class="cand-meta">
+        ${c.pct ? `<div style="color:var(--verified-blue);font-weight:600">${c.pct}</div>` : ''}
+        <div>${c.loc || ''}</div>
+      </div>
+    `;
+    return div;
+  }
+
+  function toggleVerified() {
+    const el = document.getElementById('verified-filter');
+    el.classList.toggle('active');
+    const on = el.classList.contains('active');
+    renderCandidates(!on);
+  }
+
+  function confirmInvite() {
+    alert("✅ Invitation sent to Jordan Miller — skipping phone screen, scheduled for final round.\n\nYou'll be charged $285 only when Jordan accepts.");
+  }
+
+  // ============== Init ==============
+  renderCandidates(false);
+  setMode('candidate');
+</script>
+
+</body>
+</html>
